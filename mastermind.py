@@ -13,18 +13,21 @@ def evaluate_guess(combination, guess):
     length = len(combination)
     num_white = 0
     num_black = 0
-    tracked = [0] * length
+    tracked_combination = [0] * length
+    tracked_guess = [0] * length
     # first pass: check for matches at same position
     for i in range(0, length):
         if combination[i] == guess[i]:
             num_white += 1
-            tracked[i] = 1
+            tracked_combination[i] = 1
+            tracked_guess[i] = 1
     # second pass: check for matches at other position
     for i in range(0, length):
-        if tracked[i] == 0:
+        if tracked_guess[i] == 0:
             for j in range(0, length):
-                if (combination[j] == guess[i]) & (tracked[j] == 0):
-                    tracked[j] = 1
+                if (combination[j] == guess[i]) & (tracked_combination[j] == 0):
+                    tracked_guess[i] = 1
+                    tracked_combination[j] = 1
                     num_black += 1
     print(f"The guess resulted in {num_white} white and {num_black} black pegs")
     return num_white, num_black
