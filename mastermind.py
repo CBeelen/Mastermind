@@ -24,7 +24,7 @@ def evaluate_guess(combination, guess):
     for i in range(0, length):
         if tracked_guess[i] == 0:
             for j in range(0, length):
-                if (combination[j] == guess[i]) & (tracked_combination[j] == 0):
+                if combination[j] == guess[i] and tracked_combination[j] == 0:
                     tracked_guess[i] = 1
                     tracked_combination[j] = 1
                     num_black += 1
@@ -66,6 +66,7 @@ def user_guesses(possible_colors):
         guess = input_combination(possible_colors)
         num_white, num_black = evaluate_guess(combination, guess)
     print("You've guessed it!!")
+
 
 def main():
     possible_colors = ['red', 'orange', 'yellow', 'green', 'blue', 'white', 'brown', 'black']
