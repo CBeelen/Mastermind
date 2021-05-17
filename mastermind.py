@@ -45,6 +45,18 @@ def input_combination(possible_colors):
     return combination
 
 
+def improve_guess(possible_colors, guess, num_white, num_black):
+    new_guess = create_random_combination(possible_colors, len(guess))
+    for i in range(num_black):
+        position = random.randint(0, 4)
+        guess_position = random.randint(0, 4)
+        new_guess[position] = guess[guess_position]
+    for i in range(num_white):
+        position = random.randint(0, 4)
+        new_guess[position] = guess[position]
+    return new_guess
+
+
 def computer_guesses(possible_colors):
     print("I will try to guess your combination.")
     combination = input_combination(possible_colors)
@@ -52,8 +64,16 @@ def computer_guesses(possible_colors):
     guess = create_random_combination(possible_colors, len(combination))
     print(f'Guessing... {guess}')
     num_white, num_black = evaluate_guess(combination, guess)
+    num_tries = 0
+    while num_white != 5 and num_tries < 10:
+        guess = improve_guess(possible_colors, guess, num_white, num_black)
+        print(f'Guessing... {guess}')
+        num_white, num_black = evaluate_guess(combination, guess)
+        num_tries += 1
     if num_white == 5:
         print("I have guessed the combination!")
+    else:
+        print("I am giving up.")
 
 
 def user_guesses(possible_colors):
@@ -71,7 +91,7 @@ def user_guesses(possible_colors):
 def main():
     possible_colors = ['red', 'orange', 'yellow', 'green', 'blue', 'white', 'brown', 'black']
 
-    user_guesses(possible_colors)
+    computer_guesses(possible_colors)
 
 
 main()
