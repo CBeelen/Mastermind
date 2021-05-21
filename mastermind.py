@@ -25,7 +25,7 @@ def evaluate_guess(combination, guess):
     for i in range(0, length):
         if tracked_guess[i] == 0:
             for j in range(0, length):
-                if combination[j] == guess[i] and tracked_combination[j] == 0:
+                if combination[j] == guess[i] and tracked_combination[j] == 0 and tracked_guess[i] == 0:
                     tracked_guess[i] = 1
                     tracked_combination[j] = 1
                     num_black += 1
