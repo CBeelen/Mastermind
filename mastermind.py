@@ -1,6 +1,37 @@
 import random
 
-POSSIBLE_COLOURS = ('red', 'orange', 'yellow', 'green', 'blue', 'white', 'brown', 'black')
+POSSIBLE_COLOURS = ('red', 'orange', 'yellow', 'green', 'blue', 'white')
+SENARY_DICT = {
+        'red': 0,
+        'orange': 1,
+        'yellow': 2,
+        'green': 3,
+        'blue': 4,
+        'white': 5
+    }
+
+
+class Combination:
+    def __int__(self, colors):
+        self.senary = translate_to_senary(colors)
+
+
+def translate_to_senary(colors):
+    senary = 0
+    for i in range(1,len(colors)+1):
+        senary += 6**(i-1) * SENARY_DICT[colors[i-1]]
+    return(senary)
+
+
+def translate_from_senary(senary, combination_length):
+    reverse_dict = {number: color for color, number in SENARY_DICT.items()}
+    colors = []
+    for i in range(1, combination_length+1):
+        current = senary % (6**i)
+        senary -= current
+        colors.append(reverse_dict[current/6**(i-1)])
+    return(colors)
+
 
 def create_random_combination(length):
     random_combination = []
@@ -91,7 +122,12 @@ def user_guesses():
 
 def main():
 
-    user_guesses()
+    colors = input_combination()
+    print(colors)
+    senary = translate_to_senary(colors)
+    print(senary)
+    colors_return = translate_from_senary(senary, len(colors))
+    print(colors_return)
 
 
 main()
