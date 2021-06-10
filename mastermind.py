@@ -12,15 +12,25 @@ SENARY_DICT = {
 
 
 class Combination:
-    def __int__(self, colors):
+    def __init__(self, colors):
         self.senary = translate_to_senary(colors)
+
+
+class GameHistory:
+    def __init__(self):
+        self.history = dict()
+        self.num_guesses = 0
+
+    def add_guess(self, num_white, num_black, guess):
+        self.history[guess] = (num_white, num_black)
+        self.num_guesses += 1
 
 
 def translate_to_senary(colors):
     senary = 0
     for i in range(1,len(colors)+1):
         senary += 6**(i-1) * SENARY_DICT[colors[i-1]]
-    return(senary)
+    return senary
 
 
 def translate_from_senary(senary, combination_length):
@@ -30,14 +40,16 @@ def translate_from_senary(senary, combination_length):
         current = senary % (6**i)
         senary -= current
         colors.append(reverse_dict[current/6**(i-1)])
-    return(colors)
+    colors_final = tuple(colors)
+    return colors_final
 
 
 def create_random_combination(length):
     random_combination = []
     for i in range(0, length):
         random_combination.append(random.choice(POSSIBLE_COLOURS))
-    return random_combination
+    random_combination_final = tuple(random_combination)
+    return random_combination_final
 
 
 def evaluate_guess(combination, guess):
@@ -74,11 +86,35 @@ def input_combination():
             message = "{} is not a possible colour. Please choose again: "
             color_new = input(message.format(color_new))
         combination.append(color_new)
-    return combination
+    combination_final = tuple(combination)
+    return combination_final
+
+
+def brute_force_next_guess(history, current_guess):
+    current_senary = translate_to_senary(current_guess)
+    current_senary += 1
+    new_guess = translate_from_senary(current_senary, len(current_guess))
+    return new_guess
+
+
+def brute_force_solve(combination, max_guesses):
+    guess = ('red', 'red', 'red', 'red', 'red')
+    history = GameHistory()
+    while True:
+        if history.num_guesses >= max_guesses:
+            print('I am giving up')
+            break
+        num_white, num_black = evaluate_guess(combination, guess)
+        if num_white == 5:
+            print('I have guessed it!')
+            break
+        history.add_guess(num_white, num_black, guess)
+        guess = brute_force_next_guess(history, guess)
 
 
 def improve_guess(guess, num_white, num_black):
-    new_guess = create_random_combination(len(guess))
+    new_guess_tuple = create_random_combination(len(guess))
+    new_guess = list(new_guess_tuple)
     for i in range(num_black):
         position = random.randint(0, 4)
         guess_position = random.randint(0, 4)
@@ -86,10 +122,11 @@ def improve_guess(guess, num_white, num_black):
     for i in range(num_white):
         position = random.randint(0, 4)
         new_guess[position] = guess[position]
-    return new_guess
+    new_guess_tuple = tuple(new_guess)
+    return new_guess_tuple
 
 
-def computer_guesses():
+def computer_guesses_old():
     print("I will try to guess your combination.")
     combination = input_combination()
     num_tries = 0
@@ -108,6 +145,11 @@ def computer_guesses():
         print("I am giving up.")
 
 
+def computer_guesses_bf():
+    print("I will try to guess your combination.")
+    combination = input_combination()
+    brute_force_solve(combination, 10)
+
 def user_guesses():
     combination = create_random_combination(5)
     num_white = -1
@@ -122,12 +164,7 @@ def user_guesses():
 
 def main():
 
-    colors = input_combination()
-    print(colors)
-    senary = translate_to_senary(colors)
-    print(senary)
-    colors_return = translate_from_senary(senary, len(colors))
-    print(colors_return)
+    computer_guesses_bf()
 
 
 main()
