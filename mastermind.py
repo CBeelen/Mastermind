@@ -1,4 +1,5 @@
 import random
+from argparse import ArgumentParser
 
 POSSIBLE_COLOURS = ('red', 'orange', 'yellow', 'green', 'blue', 'white')
 SENARY_DICT = {
@@ -154,7 +155,7 @@ def computer_guesses_old():
 def computer_guesses_bf():
     print("I will try to guess your combination.")
     combination = input_combination()
-    brute_force_solve(combination, 100000)
+    brute_force_solve(combination, 10000)
 
 def user_guesses():
     combination = create_random_combination(5)
@@ -165,12 +166,20 @@ def user_guesses():
             print("Try again!")
         guess = input_combination()
         num_white, num_black = evaluate_guess(combination, guess)
+        print(f'You get {num_white} white and {num_black} black pegs')
     print("You've guessed it!!")
 
 
 def main():
 
-    computer_guesses_bf()
+    parser = ArgumentParser()
+    parser.add_argument('mode', choices=['user-guesses', 'computer-guesses'], help='Choose mode')
+    args = parser.parse_args()
+
+    if args.mode == 'user-guesses':
+        user_guesses()
+    elif args.mode == 'computer-guesses':
+        computer_guesses_bf()
 
 
 main()
