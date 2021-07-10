@@ -72,7 +72,6 @@ def evaluate_guess(combination, guess):
                     tracked_guess[i] = 1
                     tracked_combination[j] = 1
                     num_black += 1
-    print(f"The guess resulted in {num_white} white and {num_black} black pegs")
     return num_white, num_black
 
 
@@ -90,10 +89,16 @@ def input_combination():
     return combination_final
 
 
-def brute_force_next_guess(history, current_guess):
-    current_senary = translate_to_senary(current_guess)
-    current_senary += 1
-    new_guess = translate_from_senary(current_senary, len(current_guess))
+def brute_force_next_guess(game_history, current_guess):
+    guess_senary = translate_to_senary(current_guess)
+    # now check if new new guess fits the feedback received so far
+    for combination in game_history.history:
+        guess_senary += 1
+        new_guess = translate_from_senary(guess_senary, len(current_guess))
+        (target_white, target_black) = game_history.history[combination]
+        num_white, num_black = evaluate_guess(combination, new_guess)
+        if num_white == target_white and num_black == target_black:
+            break
     return new_guess
 
 
@@ -106,7 +111,8 @@ def brute_force_solve(combination, max_guesses):
             break
         num_white, num_black = evaluate_guess(combination, guess)
         if num_white == 5:
-            print('I have guessed it!')
+            print(f'I have guessed it, after {history.num_guesses} guesses!')
+            print(f'Your combination was: {guess}')
             break
         history.add_guess(num_white, num_black, guess)
         guess = brute_force_next_guess(history, guess)
@@ -148,7 +154,7 @@ def computer_guesses_old():
 def computer_guesses_bf():
     print("I will try to guess your combination.")
     combination = input_combination()
-    brute_force_solve(combination, 10)
+    brute_force_solve(combination, 100000)
 
 def user_guesses():
     combination = create_random_combination(5)
