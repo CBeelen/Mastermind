@@ -54,26 +54,21 @@ def create_random_combination(length):
 
 
 def evaluate_guess(combination, guess):
-    length = len(combination)
-    num_white = 0
-    num_black = 0
-    tracked_combination = [0] * length
-    tracked_guess = [0] * length
     # first pass: check for matches at same position
-    for i in range(0, length):
+    num_pos = 0  # correct guess
+    for i in range(len(guess)):
         if combination[i] == guess[i]:
-            num_white += 1
-            tracked_combination[i] = 1
-            tracked_guess[i] = 1
-    # second pass: check for matches at other position
-    for i in range(0, length):
-        if tracked_guess[i] == 0:
-            for j in range(0, length):
-                if combination[j] == guess[i] and tracked_combination[j] == 0 and tracked_guess[i] == 0:
-                    tracked_guess[i] = 1
-                    tracked_combination[j] = 1
-                    num_black += 1
-    return num_white, num_black
+            num_pos += 1
+    # second pass: check for matches at any position
+    num_cols = 0
+    combination_mod = list(combination)
+    for peg in guess:
+        if peg in combination_mod:
+            num_cols += 1
+            combination_mod.remove(peg)
+    return num_pos, num_cols-num_pos
+
+
 
 
 def input_combination():
