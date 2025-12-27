@@ -1,21 +1,8 @@
 import random
 from argparse import ArgumentParser
+from itertools import product
 
-POSSIBLE_COLOURS = ('red', 'orange', 'yellow', 'green', 'blue', 'white')
-SENARY_DICT = {
-        'red': 0,
-        'orange': 1,
-        'yellow': 2,
-        'green': 3,
-        'blue': 4,
-        'white': 5
-    }
-
-
-class Combination:
-    def __init__(self, colors):
-        self.senary = translate_to_senary(colors)
-
+POSSIBLE_COLOURS = ['red', 'green', 'blue', 'white', 'black', 'yellow', 'orange', 'brown', 'pink']
 
 class GameHistory:
     def __init__(self):
@@ -25,32 +12,6 @@ class GameHistory:
     def add_guess(self, num_black, num_white, guess):
         self.history[guess] = (num_black, num_white)
         self.num_guesses += 1
-
-
-def translate_to_senary(colors):
-    senary = 0
-    for i in range(1,len(colors)+1):
-        senary += 6**(i-1) * SENARY_DICT[colors[i-1]]
-    return senary
-
-
-def translate_from_senary(senary, combination_length):
-    reverse_dict = {number: color for color, number in SENARY_DICT.items()}
-    colors = []
-    for i in range(1, combination_length+1):
-        current = senary % (6**i)
-        senary -= current
-        colors.append(reverse_dict[current/6**(i-1)])
-    colors_final = tuple(colors)
-    return colors_final
-
-
-def create_random_combination(length):
-    random_combination = []
-    for i in range(0, length):
-        random_combination.append(random.choice(POSSIBLE_COLOURS))
-    random_combination_final = tuple(random_combination)
-    return random_combination_final
 
 
 def evaluate_guess(combination, guess):
@@ -69,15 +30,30 @@ def evaluate_guess(combination, guess):
     return num_pos, num_cols-num_pos
 
 
+def guess_random_remaining(combinations_left):
+    idx = random.randint(0, len(combinations_left)-1)
+    return combinations_left[idx]
 
 
-def input_combination():
-    print(f"Please input a combination. The colours are: {POSSIBLE_COLOURS}")
+def weed_out_combs(combinations_left_in, guess, num_black_guess, num_white_guess):
+    combinations_left_out = combinations_left_in.copy()
+    for combination in combinations_left_in:
+        num_black, num_white = evaluate_guess(combination, guess)
+        if num_black == num_black_guess and num_white == num_white_guess:
+            continue
+        else:
+            combinations_left_out.remove(combination)
+    return combinations_left_out
+
+
+def input_combination(num_colors, combination_length):
+    print(f"Please input a combination of length {combination_length}.\n"
+          f"The colours are: {POSSIBLE_COLOURS[:num_colors]}")
     combination = []
     txt = "Colour of peg {} "
-    for i in range(1,6):
+    for i in range(1,combination_length+1):
         color_new = input(txt.format(i))
-        while color_new not in POSSIBLE_COLOURS:
+        while color_new not in POSSIBLE_COLOURS[:num_colors]:
             message = "{} is not a possible colour. Please choose again: "
             color_new = input(message.format(color_new))
         combination.append(color_new)
@@ -85,97 +61,56 @@ def input_combination():
     return combination_final
 
 
-def brute_force_next_guess(game_history, current_guess):
-    guess_senary = translate_to_senary(current_guess)
-    # now check if new new guess fits the feedback received so far
-    for combination in game_history.history:
-        guess_senary += 1
-        new_guess = translate_from_senary(guess_senary, len(current_guess))
-        (target_white, target_black) = game_history.history[combination]
-        num_black, num_white = evaluate_guess(combination, new_guess)
-        if num_black == target_white and num_white == target_black:
-            break
-    return new_guess
-
-
-def brute_force_solve(combination, max_guesses):
-    guess = ('red', 'red', 'red', 'red', 'red')
-    history = GameHistory()
-    while True:
-        if history.num_guesses >= max_guesses:
-            print('I am giving up')
-            break
-        num_black, num_white = evaluate_guess(combination, guess)
-        if num_black == 5:
-            print(f'I have guessed it, after {history.num_guesses} guesses!')
-            print(f'Your combination was: {guess}')
-            break
-        history.add_guess(num_black, num_white, guess)
-        guess = brute_force_next_guess(history, guess)
-
-
-
-def improve_guess(guess, num_black, num_white):
-    new_guess_tuple = create_random_combination(len(guess))
-    new_guess = list(new_guess_tuple)
-    for i in range(num_white):
-        position = random.randint(0, 4)
-        guess_position = random.randint(0, 4)
-        new_guess[position] = guess[guess_position]
-    for i in range(num_black):
-        position = random.randint(0, 4)
-        new_guess[position] = guess[position]
-    new_guess_tuple = tuple(new_guess)
-    return new_guess_tuple
-
-
-def computer_guesses_old():
+def computer_guesses(num_colors, combination_length):
     print("I will try to guess your combination.")
-    combination = input_combination()
-    num_tries = 0
-    num_black = -1
-    while num_black != 5 and num_tries < 10:
-        if num_black == -1:     # initial guess
-            guess = create_random_combination(len(combination))
-        else:
-            guess = improve_guess(guess, num_black, num_white)
-        print(f'Guessing... {guess}')
+    combination = input_combination(num_colors, combination_length)
+
+    combinations_left = list(product(POSSIBLE_COLOURS[:num_colors], repeat=combination_length))
+    game_history = GameHistory()
+    while len(combinations_left) > 0:
+        print(f'number of combinations left: {len(combinations_left)}')
+        guess = guess_random_remaining(combinations_left)
         num_black, num_white = evaluate_guess(combination, guess)
-        num_tries += 1
-    if num_black == 5:
-        print("I have guessed the combination!")
-    else:
-        print("I am giving up.")
+        game_history.add_guess(num_white, num_black, guess)
+        print(f'guess {game_history.num_guesses}: {guess}, {num_black} black, {num_white} white')
+        if num_black == len(guess):
+            print(f'solved. Combination: {combinations_left[0]}, guesses: {game_history.num_guesses}')
+            break
+        combinations_left = weed_out_combs(combinations_left, guess, num_black, num_white)
 
 
-def computer_guesses_bf():
-    print("I will try to guess your combination.")
-    combination = input_combination()
-    brute_force_solve(combination, 10000)
-
-def user_guesses():
-    combination = create_random_combination(5)
+def user_guesses(num_colors, combination_length):
+    combination = [POSSIBLE_COLOURS[random.randint(0, num_colors - 1)] for i in range(combination_length)]
+    print(combination)
     num_black = -1
     print("Try to guess my combination!")
-    while num_black != 5:
+    while num_black != combination_length:
         if num_black != -1: # all iterations but the first
             print("Try again!")
-        guess = input_combination()
+        guess = input_combination(num_colors, combination_length)
         num_black, num_white = evaluate_guess(combination, guess)
         print(f'You get {num_black} black and {num_white} white pegs')
     print("You've guessed it!!")
 
 
 def main():
-
     parser = ArgumentParser()
     parser.add_argument('mode', choices=['user-guesses', 'computer-guesses'], help='Choose mode')
+    parser.add_argument('--num_colors', type=int, default=8, help='Choose number of colors')
+    parser.add_argument('--combination_length', type=int, default=5,
+                        help='Choose length of combination')
     args = parser.parse_args()
 
+    if args.num_colors > 9:
+        raise ValueError('num_colors cannot be greater than 9')
+    if args.combination_length > 5:
+        print('Warning: combination length exceeding 5 can make solver slow')
+
     if args.mode == 'user-guesses':
-        user_guesses()
+        user_guesses(args.num_colors, args.combination_length)
     elif args.mode == 'computer-guesses':
-        computer_guesses_bf()
+        computer_guesses(args.num_colors, args.combination_length)
 
 
-main()
+if __name__ == "__main__":
+    main()
