@@ -72,20 +72,28 @@ def input_combination(num_colors, combination_length):
 
 def computer_guesses(num_colors, combination_length):
     print("I will try to guess your combination.")
-    combination = input_combination(num_colors, combination_length)
+    #combination = input_combination(num_colors, combination_length)
 
     combinations_left = list(product(POSSIBLE_COLOURS[:num_colors], repeat=combination_length))
     game_history = GameHistory()
-    while len(combinations_left) > 0:
+    while len(combinations_left) > 1:
         print(f'number of combinations left: {len(combinations_left)}')
         guess = guess_random_remaining(combinations_left)
-        num_black, num_white = evaluate_guess(combination, guess)
-        game_history.add_guess(num_white, num_black, guess)
-        print(f'guess {game_history.num_guesses}: {guess}, {num_black} black, {num_white} white')
+        print(f'Here is my guess: {guess}')
+        num_black = int(input("Feedback: number of black pegs: "))
         if num_black == len(guess):
-            print(f'solved. Combination: {combinations_left[0]}, guesses: {game_history.num_guesses}')
+            print(f'solved. Combination: {guess}, guesses: {game_history.num_guesses+1}')
             break
+        num_white = int(input("Feedback: number of white pegs: "))
+        game_history.add_guess(num_black, num_white, guess)
+        print(f'guess {game_history.num_guesses}: {guess}, {num_black} black, {num_white} white')
+        print()
         combinations_left = weed_out_combs(combinations_left, guess, num_black, num_white)
+    if len(combinations_left) == 1:
+        print('Only one combination left!')
+        print(f'solved. Combination: {combinations_left[0]}, guesses: {game_history.num_guesses+1}')
+    if len(combinations_left) == 0:
+        print('No combination left. You must have made a mistake when scoring!')
 
 
 def user_guesses(num_colors, combination_length):
