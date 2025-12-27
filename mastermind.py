@@ -22,8 +22,8 @@ class GameHistory:
         self.history = dict()
         self.num_guesses = 0
 
-    def add_guess(self, num_white, num_black, guess):
-        self.history[guess] = (num_white, num_black)
+    def add_guess(self, num_black, num_white, guess):
+        self.history[guess] = (num_black, num_white)
         self.num_guesses += 1
 
 
@@ -92,8 +92,8 @@ def brute_force_next_guess(game_history, current_guess):
         guess_senary += 1
         new_guess = translate_from_senary(guess_senary, len(current_guess))
         (target_white, target_black) = game_history.history[combination]
-        num_white, num_black = evaluate_guess(combination, new_guess)
-        if num_white == target_white and num_black == target_black:
+        num_black, num_white = evaluate_guess(combination, new_guess)
+        if num_black == target_white and num_white == target_black:
             break
     return new_guess
 
@@ -105,24 +105,24 @@ def brute_force_solve(combination, max_guesses):
         if history.num_guesses >= max_guesses:
             print('I am giving up')
             break
-        num_white, num_black = evaluate_guess(combination, guess)
-        if num_white == 5:
+        num_black, num_white = evaluate_guess(combination, guess)
+        if num_black == 5:
             print(f'I have guessed it, after {history.num_guesses} guesses!')
             print(f'Your combination was: {guess}')
             break
-        history.add_guess(num_white, num_black, guess)
+        history.add_guess(num_black, num_white, guess)
         guess = brute_force_next_guess(history, guess)
 
 
 
-def improve_guess(guess, num_white, num_black):
+def improve_guess(guess, num_black, num_white):
     new_guess_tuple = create_random_combination(len(guess))
     new_guess = list(new_guess_tuple)
-    for i in range(num_black):
+    for i in range(num_white):
         position = random.randint(0, 4)
         guess_position = random.randint(0, 4)
         new_guess[position] = guess[guess_position]
-    for i in range(num_white):
+    for i in range(num_black):
         position = random.randint(0, 4)
         new_guess[position] = guess[position]
     new_guess_tuple = tuple(new_guess)
@@ -133,16 +133,16 @@ def computer_guesses_old():
     print("I will try to guess your combination.")
     combination = input_combination()
     num_tries = 0
-    num_white = -1
-    while num_white != 5 and num_tries < 10:
-        if num_white == -1:     # initial guess
+    num_black = -1
+    while num_black != 5 and num_tries < 10:
+        if num_black == -1:     # initial guess
             guess = create_random_combination(len(combination))
         else:
-            guess = improve_guess(guess, num_white, num_black)
+            guess = improve_guess(guess, num_black, num_white)
         print(f'Guessing... {guess}')
-        num_white, num_black = evaluate_guess(combination, guess)
+        num_black, num_white = evaluate_guess(combination, guess)
         num_tries += 1
-    if num_white == 5:
+    if num_black == 5:
         print("I have guessed the combination!")
     else:
         print("I am giving up.")
@@ -155,14 +155,14 @@ def computer_guesses_bf():
 
 def user_guesses():
     combination = create_random_combination(5)
-    num_white = -1
+    num_black = -1
     print("Try to guess my combination!")
-    while num_white != 5:
-        if num_white != -1: # all iterations but the first
+    while num_black != 5:
+        if num_black != -1: # all iterations but the first
             print("Try again!")
         guess = input_combination()
-        num_white, num_black = evaluate_guess(combination, guess)
-        print(f'You get {num_white} white and {num_black} black pegs')
+        num_black, num_white = evaluate_guess(combination, guess)
+        print(f'You get {num_black} black and {num_white} white pegs')
     print("You've guessed it!!")
 
 
