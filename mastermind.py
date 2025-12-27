@@ -114,6 +114,7 @@ def brute_force_solve(combination, max_guesses):
         guess = brute_force_next_guess(history, guess)
 
 
+
 def improve_guess(guess, num_white, num_black):
     new_guess_tuple = create_random_combination(len(guess))
     new_guess = list(new_guess_tuple)
