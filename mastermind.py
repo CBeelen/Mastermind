@@ -47,18 +47,27 @@ def weed_out_combs(combinations_left_in, guess, num_black_guess, num_white_guess
 
 
 def input_combination(num_colors, combination_length):
-    print(f"Please input a combination of length {combination_length}.\n"
-          f"The colours are: {POSSIBLE_COLOURS[:num_colors]}")
+    color_list_str = ''
+    for color in POSSIBLE_COLOURS[:num_colors]:
+        color_list_str += f'{color} | '
+    color_list_str = color_list_str[:-3]
+    print(f"Input combination of length {combination_length}. Separated by spaces.\n"
+          f"The colours are: {color_list_str}")
     combination = []
-    txt = "Colour of peg {} "
-    for i in range(1,combination_length+1):
-        color_new = input(txt.format(i))
-        while color_new not in POSSIBLE_COLOURS[:num_colors]:
-            message = "{} is not a possible colour. Please choose again: "
-            color_new = input(message.format(color_new))
-        combination.append(color_new)
-    combination_final = tuple(combination)
-    return combination_final
+    while len(combination) == 0:
+        input_str = input("Combination: ")
+        input_list = input_str.split(' ')
+        if len(input_list) != combination_length:
+            print(f"Length is {len(input_list)}. Input a combination of length {combination_length}.")
+            continue
+        colors_incorrect = []
+        for color in input_list:
+            if color not in POSSIBLE_COLOURS:
+                colors_incorrect.append(color)
+        if len(colors_incorrect) >0:
+            print(f'Color {colors_incorrect[0]} not in the possible colours.')
+            continue
+        return input_list
 
 
 def computer_guesses(num_colors, combination_length):
@@ -81,16 +90,17 @@ def computer_guesses(num_colors, combination_length):
 
 def user_guesses(num_colors, combination_length):
     combination = [POSSIBLE_COLOURS[random.randint(0, num_colors - 1)] for i in range(combination_length)]
-    print(combination)
     num_black = -1
     print("Try to guess my combination!")
+    num_guesses = 0
     while num_black != combination_length:
         if num_black != -1: # all iterations but the first
-            print("Try again!")
+            print(f"That's guess {num_guesses}. Try again!")
         guess = input_combination(num_colors, combination_length)
+        num_guesses += 1
         num_black, num_white = evaluate_guess(combination, guess)
         print(f'You get {num_black} black and {num_white} white pegs')
-    print("You've guessed it!!")
+    print(f"You've guessed it after {num_guesses} tries!")
 
 
 def main():
