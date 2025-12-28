@@ -70,6 +70,10 @@ def input_combination(num_colors, combination_length):
         return input_list
 
 
+def input_combination_numbers(num_colors, combination_length):
+
+
+
 def computer_guesses(num_colors, combination_length):
     print("I will try to guess your combination.")
     #combination = input_combination(num_colors, combination_length)
